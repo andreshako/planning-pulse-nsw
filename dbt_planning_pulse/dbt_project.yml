@@ -1,0 +1,23 @@
+name: 'planning_pulse_nsw'
+version: '1.0.0'
+config-version: 2
+
+profile: 'planning_pulse_nsw'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+analysis-paths: ["analyses"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  planning_pulse_nsw:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table

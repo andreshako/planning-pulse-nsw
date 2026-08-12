@@ -1,3 +1,7 @@
 requests>=2.31,<3
 duckdb>=0.10,<2
 python-dotenv>=1.0,<2
+
+# dbt-duckdb bundles a matching dbt-core version as a transitive dependency;
+# pin to the 1.x line so `pip install` resolves a mutually compatible pair.
+dbt-duckdb>=1.8,<2

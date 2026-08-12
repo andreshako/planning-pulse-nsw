@@ -1,0 +1,31 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: main
+    description: >
+      Raw layer landed by scripts/ingest_da_sample.py directly from the NSW
+      Online DA Data API, with no cleaning, typing, or renaming applied.
+
+    tables:
+      - name: raw_development_applications
+        description: >
+          One row per development-application record as returned by the NSW
+          Online DA Data API for the most recently ingested sample. The
+          ingestion script loads this table with DuckDB's read_json_auto(),
+          so its columns and types are inferred from whatever the API
+          response contains rather than declared up front here.
+
+          Rerunning scripts/ingest_da_sample.py replaces this table's
+          contents (CREATE OR REPLACE), so it always reflects only the
+          latest ingestion run, not accumulated history. See
+          docs/data_source.md for the documented request/response shape and
+          docs/architecture.md for how this table feeds staging models.
+
+          Column definitions and freshness config are intentionally omitted:
+          live API credentials are not yet available (see
+          docs/data_source.md), so no real extract has been loaded or
+          inspected, and the data dictionary's field list has not been
+          verified against an actual API response. Add verified columns and
+          a freshness block, keyed off a confirmed timestamp field, once a
+          real sample has been ingested.

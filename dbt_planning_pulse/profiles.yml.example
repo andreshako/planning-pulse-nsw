@@ -1,0 +1,21 @@
+# Template dbt profile for Planning Pulse NSW.
+#
+# DuckDB profiles hold no secrets (just a local file path), but dbt convention
+# keeps profiles.yml out of version control so each developer's path/threads
+# settings stay local. Copy this file to profiles.yml in the same directory
+# (dbt_planning_pulse/profiles.yml is gitignored) and adjust if needed.
+#
+# Run dbt from within dbt_planning_pulse/ with:
+#   DBT_PROFILES_DIR=. dbt debug
+# or pass --profiles-dir . explicitly.
+
+planning_pulse_nsw:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      # Relative to this file's directory (dbt_planning_pulse/), resolving to
+      # the same data/planning_pulse.duckdb file created by
+      # scripts/ingest_da_sample.py.
+      path: ../data/planning_pulse.duckdb
+      threads: 4

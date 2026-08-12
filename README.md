@@ -53,6 +53,30 @@ Access to the API is broker-mediated, not self-service — see
 [`docs/data_source.md`](docs/data_source.md) for how to request it and full details
 on the request/response shape.
 
+## dbt setup
+
+`dbt_planning_pulse/` is a dbt project (profile/project name `planning_pulse_nsw`)
+configured for the [dbt-duckdb](https://github.com/duckdb/dbt-duckdb) adapter,
+pointing at the same `data/planning_pulse.duckdb` file the ingestion script
+writes to. No models exist yet — only the source contract for
+`raw_development_applications` (see
+[`dbt_planning_pulse/models/staging/sources.yml`](dbt_planning_pulse/models/staging/sources.yml)
+and [`dbt_planning_pulse/models/staging/README.md`](dbt_planning_pulse/models/staging/README.md)).
+
+```bash
+# from the repo root, with the venv from Local setup above active
+cp dbt_planning_pulse/profiles.yml.example dbt_planning_pulse/profiles.yml
+
+cd dbt_planning_pulse
+DBT_PROFILES_DIR=. dbt debug   # validates project + profile; does not need raw_development_applications to exist yet
+```
+
+`dbt_planning_pulse/profiles.yml` is local-only (gitignored) — it holds no
+secrets for DuckDB, but stays out of version control by dbt convention so
+each developer's path/threads settings stay local. Run `dbt run` or
+`dbt build` only after `python scripts/ingest_da_sample.py` has created
+`raw_development_applications` — and only once staging models exist to run.
+
 ## Data caveats
 
 - Council participation in the Online DA Data API became mandatory in **July 2021**. Data from before that date is likely incomplete, as it depends on voluntary adoption by individual councils, and comparisons across time periods spanning that boundary should be made cautiously.
@@ -80,8 +104,10 @@ data/
   raw/                          # Landed raw API extracts (not committed)
   processed/                    # Intermediate processed data (not committed)
 dbt_planning_pulse/
+  dbt_project.yml               # dbt project config (profile: planning_pulse_nsw)
+  profiles.yml.example          # tracked template; copy to profiles.yml (gitignored) to run dbt
   models/
-    staging/                    # dbt staging models
+    staging/                    # source contract (sources.yml) + future staging models
     marts/                      # dbt mart models
 scripts/                        # Python extraction/utility scripts
 docs/                           # Project documentation, including architecture notes
