@@ -37,6 +37,7 @@ REQUEST_TIMEOUT_SECONDS = 30
 @dataclass
 class Config:
     sample_size: int
+    application_last_updated_from: str | None
     raw_data_dir: Path
     duckdb_path: Path
 
@@ -49,16 +50,21 @@ def load_config() -> Config:
 
     return Config(
         sample_size=sample_size,
+        application_last_updated_from=os.environ.get("DA_APPLICATION_LAST_UPDATED_FROM", "").strip() or None,
         raw_data_dir=Path(os.environ.get("RAW_DATA_DIR", "data/raw")),
         duckdb_path=Path(os.environ.get("DUCKDB_PATH", "data/planning_pulse.duckdb")),
     )
 
 
 def fetch_sample(config: Config) -> requests.Response:
+    filters: dict = {}
+    if config.application_last_updated_from:
+        filters["ApplicationLastUpdatedFrom"] = config.application_last_updated_from
+
     headers = {
         "PageSize": str(config.sample_size),
         "PageNumber": "1",
-        "filters": json.dumps({"filters": {}}),
+        "filters": json.dumps({"filters": filters}),
     }
 
     print(f"[2/4] GET {API_URL}")
