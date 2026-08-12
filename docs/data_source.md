@@ -13,43 +13,55 @@ available from **10 December 2018** and updated daily.
 
 ## Access method
 
-This is **not** a public self-service API. There is no published base URL, no
-online API-key signup, and no Swagger/OpenAPI page. Access is broker-mediated:
+The API is **public**: no credentials, API key, UAT environment, or usage
+limits are required. Requests go directly to the production endpoint below.
 
-1. Email **data.broker@environment.nsw.gov.au**.
-2. Reference the "Online DA Data API" dataset (link above).
-3. The Data Broker issues an endpoint URL and an API key/token directly to you.
+- **Method**: `GET`
+- **Endpoint**: `https://api.apps1.nsw.gov.au/eplanning/data/v0/OnlineDA`
+- **Request headers**: `PageSize`, `PageNumber`, and `filters`.
+  - `filters` is a JSON-encoded string. For no filters: `{"filters": {}}`.
 
-Neither the endpoint URL nor the authentication header name is published in the
-official documentation, so this repository does not hard-code either. Once you
-receive access details, copy `.env.example` to `.env` and fill in `DA_API_URL`
-and `DA_API_KEY` (and `DA_API_AUTH_HEADER`, if the Broker specifies a header
-other than `Authorization`). **Never commit `.env`.**
+Example (no filters, first page, 50 records):
 
-## Request shape (from the data dictionary)
+```
+GET https://api.apps1.nsw.gov.au/eplanning/data/v0/OnlineDA
+Headers:
+  PageSize: 50
+  PageNumber: 1
+  filters: {"filters": {}}
+```
 
-The API accepts a JSON body of the form:
+Documented filter fields (nested inside the `filters` object) include
+`CouncilName`, `ApplicationType`, `DevelopmentCategory`, `ApplicationStatus`,
+`CostOfDevelopmentFrom`/`To`, several date-range filters (lodgement,
+submission, determination, last-updated), and application numbers. This
+project does not use any filters yet (`{"filters": {}}`) and relies on a
+client-side sample-size cap instead — see `scripts/ingest_da_sample.py`.
+
+## Response shape
+
+The response is a JSON object:
 
 ```json
 {
-  "filters": {
-    "CouncilName": ["PENRITH CITY COUNCIL"],
-    "LodgementDateFrom": "2021-02-01",
-    "LodgementDateTo": "2021-02-28"
-  }
+  "PageSize": 50,
+  "PageNumber": 1,
+  "TotalPages": ...,
+  "TotalCount": ...,
+  "Application": [ { ... }, { ... } ]
 }
 ```
 
-Documented filters include `CouncilName`, `ApplicationType`, `DevelopmentCategory`,
-`ApplicationStatus`, `CostOfDevelopmentFrom`/`To`, several date-range filters
-(lodgement, submission, determination, last-updated), and application numbers.
-The data dictionary does not document a pagination or page-size parameter, so
-this project applies a narrow lodgement date window and a client-side record
-limit (`DA_RECORD_LIMIT`) to keep samples small — see `scripts/ingest_da_sample.py`.
+`Application` is the list of DA records for the requested page. This
+project loads that list directly into DuckDB, so the raw table's columns
+and types are inferred from whatever the API returns, not declared up
+front — see `dbt_planning_pulse/models/staging/sources.yml`.
 
-The HTTP method is not stated explicitly in the dictionary; a JSON-body POST
-request is assumed based on the documented payload shape. Confirm this with
-the Data Broker when you receive access, and adjust the script if needed.
+## Pagination note
+
+This iteration requests a single page (default 50 records, capped at 100)
+and does not implement full pagination via `TotalPages`/`PageNumber`. Full,
+paginated extraction is deferred to a later iteration.
 
 ## Coverage caveat
 
@@ -69,22 +81,20 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-cp .env.example .env
-# edit .env with the endpoint URL and API key issued by the Data Broker
-
 python scripts/ingest_da_sample.py
 ```
 
+No `.env` file is required. `.env.example` documents optional local
+overrides (sample size, storage paths) — copy it to `.env` only if you want
+to change the defaults.
+
 The script:
 
-- Reads settings from `.env` (via environment variables).
-- Stops with a clear message and makes no network request if `DA_API_URL` or
-  `DA_API_KEY` is missing.
-- Requests a small sample (default: last 7 days of lodgements, up to
-  `DA_RECORD_LIMIT` records, default 50).
+- Requests a single page of recent DA records (default 50, capped at 100)
+  with no filters applied.
 - Saves the raw API response, untouched, under `data/raw/` with a timestamped
   filename.
-- Loads the (limit-truncated) records into a local DuckDB database at
+- Loads the `Application` list into a local DuckDB database at
   `data/planning_pulse.duckdb`, table `raw_development_applications`.
 - **Replaces** the contents of that table on every run (it does not append).
   Raw response files under `data/raw/` are timestamped and are never
@@ -93,3 +103,10 @@ The script:
 
 This script performs ingestion only — no cleaning, typing, or modelling.
 That happens in dbt staging/mart models in a later iteration.
+
+## Attribution
+
+Data sourced from the NSW Online DA Data API, published by the NSW
+Department of Planning, Housing and Infrastructure / NSW Planning Portal
+(https://www.data.nsw.gov.au/data/dataset/online-da-data-api), licensed
+under [Creative Commons Attribution (CC BY)](https://creativecommons.org/licenses/by/4.0/).

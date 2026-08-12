@@ -12,7 +12,14 @@ This project is descriptive, not evaluative: it reports what is present in the p
 
 ## Data source
 
-- **NSW Online DA Data API**: https://www.data.nsw.gov.au/data/dataset/online-da-data-api
+- **NSW Online DA Data API**: https://www.data.nsw.gov.au/data/dataset/online-da-data-api — a public API,
+  no credentials or API key required. See [`docs/data_source.md`](docs/data_source.md) for the request/response shape.
+
+### Attribution
+
+Data sourced from the NSW Online DA Data API, published by the NSW Department of Planning,
+Housing and Infrastructure / NSW Planning Portal, licensed under
+[Creative Commons Attribution (CC BY)](https://creativecommons.org/licenses/by/4.0/).
 
 ## Intended architecture
 
@@ -42,18 +49,15 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-cp .env.example .env
-# fill in DA_API_URL and DA_API_KEY (issued by the NSW Data Broker — see docs/data_source.md)
-
 python scripts/ingest_da_sample.py
 ```
 
-The script fetches a conservative sample (recent lodgements, capped record count),
-preserves the raw API response under `data/raw/`, and loads it into a local DuckDB
-database at `data/planning_pulse.duckdb` (table `raw_development_applications`).
-Access to the API is broker-mediated, not self-service — see
-[`docs/data_source.md`](docs/data_source.md) for how to request it and full details
-on the request/response shape.
+No `.env` file or credentials are needed — the API is public. The script fetches
+a conservative single-page sample (default 50 records, capped at 100), preserves
+the raw API response under `data/raw/`, and loads it into a local DuckDB database
+at `data/planning_pulse.duckdb` (table `raw_development_applications`). See
+[`docs/data_source.md`](docs/data_source.md) for the full request/response shape,
+and `.env.example` for optional local overrides (sample size, storage paths).
 
 ## dbt setup
 
@@ -87,7 +91,8 @@ each developer's path/threads settings stay local. Run `dbt run` or
 
 ## Project status
 
-This is an early iteration focused on repository scaffolding. No data has been downloaded and no models have been built yet.
+This iteration adds a working ingestion script against the public NSW Online DA Data API.
+No dbt models have been built yet.
 
 ## Roadmap (future iterations)
 
