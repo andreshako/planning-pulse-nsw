@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: stg_development_applications
+    description: >
+      One row per development application, staged from
+      raw.raw_development_applications. Based on the current small,
+      unfiltered API sample (a single page, no filters, ~50 records)
+      ingested via scripts/ingest_da_sample.py — column presence, null
+      rates, and value ranges have only been verified against this
+      sample, not the full dataset. Only fields confirmed present in the
+      real API response are selected; full addresses, coordinates,
+      lot/plan details, and other location-level detail are deliberately
+      excluded.
+    columns:
+      - name: application_number
+        description: >
+          The Planning Portal application number (source:
+          PlanningPortalApplicationNumber). Confirmed unique and
+          non-null across the profiled sample.
+        data_tests:
+          - not_null
+          - unique
+      - name: council_name
+        description: >
+          Name of the responsible council (source: Council.CouncilName,
+          a nested struct field in the raw response).
+        data_tests:
+          - not_null
+      - name: application_status
+        description: >
+          Status of the application (source: ApplicationStatus). In the
+          profiled sample, every record has the value "Cancelled" —
+          this is a real characteristic of the current sample, not
+          filtered or altered.
+        data_tests:
+          - not_null
+      - name: application_type
+        description: >
+          Type of application (source: ApplicationType), e.g.
+          "Development Application", "Modification Application",
+          "Review of determination".
+        data_tests:
+          - not_null
+      - name: development_cost
+        description: >
+          Estimated cost of development (source: CostOfDevelopment).
+          Contains nulls in the profiled sample; no not-null test
+          applied.
+      - name: number_of_new_dwellings
+        description: >
+          Number of new dwellings proposed (source:
+          NumberOfNewDwellings). Contains nulls in the profiled sample;
+          no not-null test applied.
+      - name: number_of_storeys
+        description: >
+          Number of storeys proposed (source: NumberOfStoreys).
+          Contains nulls in the profiled sample; no not-null test
+          applied.
+      - name: date_last_updated
+        description: >
+          Timestamp the source record was last updated (source:
+          DateLastUpdated, cast from string to timestamp). Not a
+          lodgement or determination date — the real schema does not
+          contain either of those fields as of this sample.
+        data_tests:
+          - not_null
