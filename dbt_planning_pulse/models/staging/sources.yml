@@ -22,10 +22,8 @@ sources:
           docs/data_source.md for the documented request/response shape and
           docs/architecture.md for how this table feeds staging models.
 
-          Column definitions and freshness config are intentionally omitted:
-          live API credentials are not yet available (see
-          docs/data_source.md), so no real extract has been loaded or
-          inspected, and the data dictionary's field list has not been
-          verified against an actual API response. Add verified columns and
-          a freshness block, keyed off a confirmed timestamp field, once a
-          real sample has been ingested.
+          Column definitions and freshness config are intentionally omitted
+          as of this iteration: the data dictionary's field list has not yet
+          been reconciled with real ingested columns (see
+          docs/data_source.md). Add verified columns and a freshness block,
+          keyed off a confirmed timestamp field, in a follow-up iteration.

@@ -1,9 +1,10 @@
 # Staging models
 
 This directory is currently configuration only (`sources.yml`) — no staging
-models exist yet, because no real extract has been loaded to build and test
-them against (live API credentials are not yet available; see
-[`docs/data_source.md`](../../../docs/data_source.md)).
+models exist yet, because no real extract had been loaded to build and test
+them against at the time this project was scaffolded. See
+[`docs/data_source.md`](../../../docs/data_source.md) for the API's request/response
+shape.
 
 ## What staging models will do, once a real extract is loaded
 
@@ -28,6 +29,6 @@ Aggregation and cross-table joins belong in `models/marts/`, not here.
 
 Building staging models against invented sample data would risk encoding
 assumptions about column names or types that don't match the real API
-response. Per this project's approach, staging models are deferred until a
-real sample has been ingested via `scripts/ingest_da_sample.py` and its
+response. Per this project's approach, staging models are built only after
+a real sample has been ingested via `scripts/ingest_da_sample.py` and its
 actual schema has been inspected.
