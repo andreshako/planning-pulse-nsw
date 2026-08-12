@@ -30,6 +30,8 @@ flowchart LR
 - **Analysis**: Notebooks or a lightweight dashboard query the marts to explore volumes and timelines.
 
 A more detailed diagram and notes live in [`docs/architecture.md`](docs/architecture.md).
+What this project measures, and its interpretation limits, are specified in
+[`docs/analytics_spec.md`](docs/analytics_spec.md).
 
 ## Local setup
 
