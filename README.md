@@ -31,6 +31,28 @@ flowchart LR
 
 A more detailed diagram and notes live in [`docs/architecture.md`](docs/architecture.md).
 
+## Local setup
+
+This iteration adds a small, reproducible ingestion script — no dbt models yet.
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+cp .env.example .env
+# fill in DA_API_URL and DA_API_KEY (issued by the NSW Data Broker — see docs/data_source.md)
+
+python scripts/ingest_da_sample.py
+```
+
+The script fetches a conservative sample (recent lodgements, capped record count),
+preserves the raw API response under `data/raw/`, and loads it into a local DuckDB
+database at `data/planning_pulse.duckdb` (table `raw_development_applications`).
+Access to the API is broker-mediated, not self-service — see
+[`docs/data_source.md`](docs/data_source.md) for how to request it and full details
+on the request/response shape.
+
 ## Data caveats
 
 - Council participation in the Online DA Data API became mandatory in **July 2021**. Data from before that date is likely incomplete, as it depends on voluntary adoption by individual councils, and comparisons across time periods spanning that boundary should be made cautiously.
