@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: stg_development_application_categories
+    description: >
+      One row per application_number + development_type, exploding the
+      nested DevelopmentType array from raw.raw_development_applications.
+      Based on the same 100-record sample as stg_development_applications
+      (fetched on demand, filtered by ApplicationLastUpdatedFrom =
+      2025-01-01). One application can have multiple development
+      categories: in the current sample, 78 of 100 applications have
+      exactly one category and 22 have more than one, producing 135
+      category rows in total. No location or address data is included.
+    columns:
+      - name: application_number
+        description: >
+          The Planning Portal application number (source:
+          PlanningPortalApplicationNumber). Non-null, but not unique at
+          this grain — an application with multiple development
+          categories appears once per category.
+        data_tests:
+          - not_null
+      - name: development_type
+        description: >
+          A single development category for the application (source:
+          unnested DevelopmentType.DevelopmentType). Confirmed non-null
+          across all exploded rows in the profiled sample.
+        data_tests:
+          - not_null
