@@ -1,5 +1,7 @@
 # Planning Pulse NSW
 
+**Live dashboard**: https://planning-pulse-nsw-fmfmcclnd6pax2c5qfdr3q.streamlit.app/
+
 Planning Pulse NSW turns publicly available NSW Planning Portal development-application (DA) data into a reproducible, well-modeled analytics dataset. It explores DA volumes and decision timelines across Greater Sydney councils and development categories, built as an open, portfolio-quality data engineering and analytics project.
 
 ## Purpose
