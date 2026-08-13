@@ -1,0 +1,52 @@
+version: 2
+
+models:
+  - name: mart_application_activity_by_category
+    description: >
+      One row per council_name + development_type + application_status
+      combination, joining stg_development_application_categories to
+      stg_development_applications on application_number. Based on the
+      local 100-record sample fetched on demand via
+      scripts/ingest_da_sample.py, filtered by
+      ApplicationLastUpdatedFrom = 2025-01-01. This is a small,
+      on-demand sample, not a full or time-consistent extract of NSW
+      planning activity — it must not be used to rank councils or to
+      draw conclusions about relative council performance or volumes.
+    columns:
+      - name: council_name
+        description: Name of the responsible council (grouping column).
+        data_tests:
+          - not_null
+      - name: development_type
+        description: >
+          A single development category for the application (grouping
+          column). An application with multiple categories contributes
+          to multiple development_type groups.
+        data_tests:
+          - not_null
+      - name: application_status
+        description: Application status (grouping column).
+        data_tests:
+          - not_null
+      - name: application_count
+        description: >
+          Count of distinct application_number values in this
+          council/category/status combination, within the current
+          local sample.
+        data_tests:
+          - not_null
+      - name: total_development_cost
+        description: >
+          Sum of development_cost across applications in this group
+          that have a non-null cost. Null if no application in the
+          group has a cost value.
+      - name: average_development_cost
+        description: >
+          Average development_cost across applications in this group
+          that have a non-null cost. Null if no application in the
+          group has a cost value.
+      - name: latest_source_updated_at
+        description: >
+          Maximum date_last_updated across applications in this group —
+          the most recent source update timestamp seen for this
+          combination in the current sample.
