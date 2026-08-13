@@ -56,8 +56,6 @@ What this project measures, and its interpretation limits, are specified in
 
 ## Local setup
 
-This iteration adds a small, reproducible ingestion script — no dbt models yet.
-
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -66,10 +64,25 @@ pip install -r requirements.txt
 python scripts/ingest_da_sample.py
 ```
 
-No `.env` file or credentials are needed — the API is public. The script fetches
-a conservative single-page sample (default 50 records, capped at 100), preserves
+No `.env` file or credentials are needed — the API is public. By default, the script
+fetches a conservative single-page sample (default 50 records, capped at 100), preserves
 the raw API response under `data/raw/`, and loads it into a local DuckDB database
-at `data/planning_pulse.duckdb` (table `raw_development_applications`). See
+at `data/planning_pulse.duckdb` (table `raw_development_applications`).
+
+For a larger, reproducible local snapshot (e.g. for dashboard work), set
+`DA_PAGE_COUNT` to fetch multiple consecutive pages of 100 records each — capped at
+50 pages (5,000 records), and never the full API history. Each page's raw response is
+preserved individually under `data/raw/`, and the DuckDB table is only replaced once
+every requested page has been fetched successfully; if any page fails, the script
+stops immediately and leaves existing data untouched. For example, a 5,000-record
+snapshot filtered to recent updates:
+
+```bash
+DA_PAGE_COUNT=50 DA_SAMPLE_SIZE=100 DA_APPLICATION_LAST_UPDATED_FROM=2025-01-01 \
+  python scripts/ingest_da_sample.py
+```
+
+See
 [`docs/data_source.md`](docs/data_source.md) for the full request/response shape,
 and `.env.example` for optional local overrides (sample size, storage paths).
 

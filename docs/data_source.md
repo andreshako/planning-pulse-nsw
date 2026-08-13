@@ -59,9 +59,14 @@ front — see `dbt_planning_pulse/models/staging/sources.yml`.
 
 ## Pagination note
 
-This iteration requests a single page (default 50 records, capped at 100)
-and does not implement full pagination via `TotalPages`/`PageNumber`. Full,
-paginated extraction is deferred to a later iteration.
+By default, the script requests a single page (default 50 records, capped
+at 100). Optionally, setting `DA_PAGE_COUNT` (see `.env.example`) fetches
+that many consecutive pages of 100 records each via `PageNumber`, up to a
+hard cap of 50 pages (5,000 records) — enough for a stronger local
+analysis snapshot without ever pulling the full API history. The script
+stops early if the API's `TotalPages` reports fewer pages are available,
+and stops immediately (without touching the DuckDB table) if any page
+request fails.
 
 ## Coverage caveat
 
@@ -90,11 +95,15 @@ to change the defaults.
 
 The script:
 
-- Requests a single page of recent DA records (default 50, capped at 100)
-  with no filters applied.
-- Saves the raw API response, untouched, under `data/raw/` with a timestamped
-  filename.
-- Loads the `Application` list into a local DuckDB database at
+- By default, requests a single page of recent DA records (default 50,
+  capped at 100), optionally filtered by `DA_APPLICATION_LAST_UPDATED_FROM`.
+- Optionally, with `DA_PAGE_COUNT` set above 1, fetches that many
+  consecutive pages of 100 records each (capped at 50 pages / 5,000
+  records), stopping immediately without modifying existing data if any
+  page fails.
+- Saves the raw API response(s), untouched, under `data/raw/` with
+  timestamped filenames — one file per page in snapshot mode.
+- Loads the combined `Application` list into a local DuckDB database at
   `data/planning_pulse.duckdb`, table `raw_development_applications`.
 - **Replaces** the contents of that table on every run (it does not append).
   Raw response files under `data/raw/` are timestamped and are never
