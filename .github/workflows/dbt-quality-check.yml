@@ -1,0 +1,44 @@
+name: dbt quality check
+
+on:
+  push:
+    paths:
+      - 'dbt_planning_pulse/**'
+      - 'requirements.txt'
+      - '.github/workflows/dbt-quality-check.yml'
+  pull_request:
+    paths:
+      - 'dbt_planning_pulse/**'
+      - 'requirements.txt'
+      - '.github/workflows/dbt-quality-check.yml'
+
+jobs:
+  dbt-parse:
+    name: Validate dbt project structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Copy local dbt profile template
+        run: cp dbt_planning_pulse/profiles.yml.example dbt_planning_pulse/profiles.yml
+
+      - name: Install dbt packages (if packages.yml exists)
+        working-directory: dbt_planning_pulse
+        if: hashFiles('dbt_planning_pulse/packages.yml') != ''
+        run: dbt deps
+
+      - name: Parse dbt project
+        working-directory: dbt_planning_pulse
+        env:
+          DBT_PROFILES_DIR: .
+        run: dbt parse

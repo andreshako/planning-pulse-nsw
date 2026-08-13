@@ -83,6 +83,27 @@ each developer's path/threads settings stay local. Run `dbt run` or
 `dbt build` only after `python scripts/ingest_da_sample.py` has created
 `raw_development_applications` — and only once staging models exist to run.
 
+## Continuous integration
+
+A minimal GitHub Actions workflow (`.github/workflows/dbt-quality-check.yml`) runs on
+pushes and pull requests that touch the dbt project, `requirements.txt`, or the workflow
+itself. It validates:
+
+- Python dependencies install cleanly from `requirements.txt`.
+- The dbt project, sources, and models parse without error (`dbt parse`), using the
+  tracked `profiles.yml.example` template — the same profile shape any contributor uses
+  locally.
+
+It deliberately does **not**:
+
+- Call the NSW Online DA Data API, fetch any data, or require the local
+  `data/planning_pulse.duckdb` file or any gitignored raw sample.
+- Run `dbt run` or `dbt test` against real records.
+
+In short, CI checks that the project is structurally sound (valid YAML, resolvable refs
+and sources, no syntax errors), not that a given data sample passes data-quality checks.
+Running the actual models and tests against a fresh sample remains a manual, local step.
+
 ## Data caveats
 
 - Council participation in the Online DA Data API became mandatory in **July 2021**. Data from before that date is likely incomplete, as it depends on voluntary adoption by individual councils, and comparisons across time periods spanning that boundary should be made cautiously.
@@ -91,8 +112,12 @@ each developer's path/threads settings stay local. Run `dbt run` or
 
 ## Project status
 
-This iteration adds a working ingestion script against the public NSW Online DA Data API.
-No dbt models have been built yet.
+This iteration includes a working ingestion script against the public NSW Online DA Data
+API, staging models (`stg_development_applications`, `stg_development_application_categories`),
+two marts (`mart_application_activity_by_council`, `mart_application_activity_by_category`)
+with dbt tests, and a minimal CI check that validates the dbt project structure. All models
+are built and tested against a small, on-demand local sample (currently 100 records) — see
+Data caveats above. No dashboard or analysis layer exists yet.
 
 ## Roadmap (future iterations)
 
@@ -102,7 +127,9 @@ No dbt models have been built yet.
 4. **Mart models** — Aggregated dbt marts for application volumes and decision timelines by council, category, and time period.
 5. **Testing & documentation** — dbt tests (uniqueness, not-null, referential integrity) and generated dbt docs.
 6. **Analysis layer** — Notebooks or a dashboard (e.g. Evidence, Streamlit, or Observable) presenting volumes and timelines with the caveats above surfaced alongside the data.
-7. **Automation** — Scheduled refresh of the pipeline (deferred; no CI is configured in this iteration).
+7. **Automation** — A minimal CI check validates dbt project structure on every push/PR
+   (see Continuous integration above). Scheduled data refresh and CI-driven data-quality
+   checks against real data remain future work.
 
 ## Repository layout
 
