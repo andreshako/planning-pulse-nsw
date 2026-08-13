@@ -10,6 +10,20 @@ Planning Pulse NSW turns publicly available NSW Planning Portal development-appl
 
 This project is descriptive, not evaluative: it reports what is present in the published data. It does not attempt to rank council performance, infer causes of processing times, or draw equity conclusions from the data. See [Data caveats](#data-caveats) below for important limitations to keep in mind when interpreting any results.
 
+## Quick start
+
+```bash
+make setup    # create .venv and install dependencies
+cp dbt_planning_pulse/profiles.yml.example dbt_planning_pulse/profiles.yml
+make ingest   # fetch a small local sample from the public API
+make build    # dbt build (models + tests) against that sample
+make docs     # generate dbt docs (see docs/runbook.md to view them)
+```
+
+See [`docs/runbook.md`](docs/runbook.md) for the full local workflow, including optional
+sample filtering, and [Continuous integration](#continuous-integration) below for what
+GitHub Actions does and does not check.
+
 ## Data source
 
 - **NSW Online DA Data API**: https://www.data.nsw.gov.au/data/dataset/online-da-data-api — a public API,
