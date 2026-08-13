@@ -110,6 +110,44 @@ each developer's path/threads settings stay local. Run `dbt run` or
 `dbt build` only after `python scripts/ingest_da_sample.py` has created
 `raw_development_applications` — and only once staging models exist to run.
 
+## Dashboard
+
+`app.py` is a public-safe Streamlit dashboard. It reads only pre-aggregated CSV
+snapshots from `dashboard_data/` (exported from the dbt marts) — it never opens the
+local DuckDB database at runtime, so it can be deployed publicly without exposing raw
+data, addresses, coordinates, application numbers, or lot/plan details.
+
+### Refreshing the data snapshot
+
+```bash
+# after make ingest && make build, with the venv active
+python scripts/export_dashboard_data.py
+```
+
+This overwrites `dashboard_data/council_activity.csv`, `dashboard_data/category_activity.csv`,
+and `dashboard_data/snapshot_metadata.csv` from whatever is currently in the local DuckDB
+marts. Review the diff before committing — it's a deliberate, reviewed snapshot, not
+data generated at dashboard runtime.
+
+### Running locally
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+### Deploying to Streamlit Community Cloud
+
+1. Push this repository to a public GitHub repo (the dashboard only needs `app.py`,
+   `requirements.txt`, and the tracked `dashboard_data/*.csv` files — no secrets, API
+   access, or local database required).
+2. On [share.streamlit.io](https://share.streamlit.io), create a new app pointing at
+   this repo, the branch to deploy, and main file path `app.py`.
+3. No secrets or environment variables are needed — the app reads only the committed
+   CSVs.
+
+(Deployment is not performed as part of this iteration.)
+
 ## Continuous integration
 
 A minimal GitHub Actions workflow (`.github/workflows/dbt-quality-check.yml`) runs on

@@ -38,6 +38,7 @@ data/raw/*
 data/processed/*
 !data/processed/.gitkeep
 *.csv
+!dashboard_data/*.csv
 *.parquet
 
 # --- Editors ---

@@ -5,12 +5,15 @@ models:
     description: >
       One row per council_name + application_status + application_type
       combination, summarizing application counts and development cost
-      from stg_development_applications. Based on the local 100-record
-      sample fetched on demand via scripts/ingest_da_sample.py, filtered
-      by ApplicationLastUpdatedFrom = 2025-01-01. This is a small,
-      on-demand sample, not a full or time-consistent extract of NSW
-      planning activity — it must not be used to rank councils or to
-      draw conclusions about relative council performance or volumes.
+      from stg_development_applications. Based on a local 5,000-record,
+      50-page snapshot fetched on demand via scripts/ingest_da_sample.py
+      (DA_PAGE_COUNT=50, DA_SAMPLE_SIZE=100), filtered by
+      ApplicationLastUpdatedFrom = 2025-01-01 — i.e. a recent-update
+      snapshot, not a complete extract of applications last updated since
+      that date. This is a point-in-time sample, not a full or
+      time-consistent extract of NSW planning activity — it must not be
+      used to rank councils or to draw conclusions about relative council
+      performance or volumes.
     columns:
       - name: council_name
         description: Name of the responsible council (grouping column).
